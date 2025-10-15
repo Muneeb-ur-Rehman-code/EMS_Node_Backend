@@ -21,7 +21,6 @@ import { markAbsentsJob } from "./utils/attendanceCron.js";
 const app = express();
 app.use(cors({
   origin: "*", // frontend URL
-  
 }));
 
 // ✅ Start Cron Job
@@ -51,6 +50,6 @@ const upload = multer({ limits: { fileSize: 100 * 1024 * 1024 } }); // 50MB
 
 
 
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Server is running on port ${PORT}`);
 });
