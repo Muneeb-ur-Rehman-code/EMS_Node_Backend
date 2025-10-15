@@ -1,4 +1,4 @@
-import Achievement from "../models/achievement.js";
+import Achievement from "../models/Achievement.js";
 import mongoose from "mongoose";
 
 
