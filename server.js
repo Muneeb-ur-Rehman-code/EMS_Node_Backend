@@ -1,58 +1,66 @@
-import dotenv from 'dotenv';
+import dotenv from "dotenv";
 dotenv.config();
 import multer from "multer";
-import connectDB from './config/db.js';
-import express from 'express';
+import connectDB from "./config/db.js";
+import express from "express";
+import cors from "cors";
+
 import userRoutes from "./routes/userRoutes.js";
 import employeeRoutes from "./routes/employeeRoutes.js";
-import taskRoutes from './routes/taskRoutes.js';
-import attendanceRoutes from './routes/attendanceRoutes.js';
+import taskRoutes from "./routes/taskRoutes.js";
+import attendanceRoutes from "./routes/attendanceRoutes.js";
 import leaveRoutes from "./routes/leaveRoutes.js";
 import achievementRoutes from "./routes/achievementRoutes.js";
-import documentRoutes   from  "./routes/documentRoutes.js";
-import cors from "cors";
+import documentRoutes from "./routes/documentRoutes.js";
 import { markAbsentsJob } from "./utils/attendanceCron.js";
 
-
-
-// ✅ allow requests from your frontend
-
-
 const app = express();
-app.use(cors({
-  origin: ["https://emsdevrolin.netlify.app", "http://localhost:5173"],
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization","Access-Control-Allow-Origin"],
-}));
 
+// ✅ Step 1: Configure CORS properly
+const allowedOrigins = [
+  "https://emsdevrolin.netlify.app",
+  "http://localhost:5173"
+];
 
-// ✅ Start Cron Job
+app.use(
+  cors({
+    origin: function (origin, callback) {
+      // Allow requests with no origin (like mobile apps or curl)
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.indexOf(origin) === -1) {
+        return callback(new Error("Not allowed by CORS"), false);
+      }
+      return callback(null, true);
+    },
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
+  })
+);
 
-connectDB();
+// ✅ Step 2: Explicitly handle OPTIONS preflight requests
+app.options("*", cors());
 
-//  Middleware to parse JSON 
+// ✅ Step 3: Parse JSON before routes
 app.use(express.json());
 
-// Routes
-app.use("/api/users", userRoutes);          // User Routes
-app.use("/api/employee", employeeRoutes);   // Employee Routes
-app.use('/api/task', taskRoutes);        // Task Routes
-app.use('/api/attendance', attendanceRoutes); // Attendance Routes
-app.use("/api/leaves", leaveRoutes);      // Leave Routes
-app.use("/api/achievements", achievementRoutes); //achievements
-app.use("/uploads", express.static("uploads"));   // Serve uploaded files statically (optional)
-app.use("/api/documents", documentRoutes);    // documents routes
+// ✅ Step 4: Connect DB
+connectDB();
+
+// ✅ Step 5: Routes
+app.use("/api/users", userRoutes);
+app.use("/api/employee", employeeRoutes);
+app.use("/api/task", taskRoutes);
+app.use("/api/attendance", attendanceRoutes);
+app.use("/api/leaves", leaveRoutes);
+app.use("/api/achievements", achievementRoutes);
+app.use("/api/documents", documentRoutes);
+app.use("/uploads", express.static("uploads"));
 
 markAbsentsJob();
 
-
+// ✅ Step 6: Start server
 const PORT = process.env.PORT || 3000;
-// Increase JSON & URL-encoded payload limit
-
-const upload = multer({ limits: { fileSize: 100 * 1024 * 1024 } }); // 50MB
-
-
-
 app.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server is running on port ${PORT}`);
+  console.log(`✅ Server running on port ${PORT}`);
 });
