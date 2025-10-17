@@ -20,7 +20,6 @@ import { markAbsentsJob } from "./utils/attendanceCron.js";
 
 const app = express();
 
-
 const allowedOrigins = [
   "https://emsdevrolin.netlify.app",
   "http://localhost:5173"
@@ -41,10 +40,6 @@ app.use(
     credentials: true,
   })
 );
-
-// ✅ Step 2: Explicitly handle OPTIONS preflight requests
-app.options("*", cors());
-;
 
 
 // ✅ Start Cron Job
