@@ -20,8 +20,7 @@ import { markAbsentsJob } from "./utils/attendanceCron.js";
 
 const app = express();
 app.use(cors({
-  origin: ["http://localhost:5173", "https://emsdevrolin.netlify.app/"],
-  credentials: true,
+  origin: "*", // Allow all origins
 }));
 
 
