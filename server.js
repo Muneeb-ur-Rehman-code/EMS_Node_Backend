@@ -19,28 +19,10 @@ import { markAbsentsJob } from "./utils/attendanceCron.js";
 
 
 const app = express();
-
-const allowedOrigins = [
-  "https://emsdevrolin.netlify.app",
-  "http://localhost:5173"
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl)
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.indexOf(origin) === -1) {
-        return callback(new Error("Not allowed by CORS"), false);
-      }
-      return callback(null, true);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
-
+app.use(cors({
+  origin: "*", // frontend URL
+  
+}));
 
 // ✅ Start Cron Job
 
@@ -69,6 +51,6 @@ const upload = multer({ limits: { fileSize: 100 * 1024 * 1024 } }); // 50MB
 
 
 
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`✅ Server is running on port ${PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

@@ -1,5 +1,4 @@
 import User from "../models/User.js";
-import Emp  from "../models/EmployeeProfile.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
@@ -77,6 +76,7 @@ export const loginUser = async (req, res) => {
     if (!employee) {
       return res.status(404).json({ message: "User not found or not approved yet" });
     }
+    console.log(employee.password);
     // Check password
     const isMatch = await bcrypt.compare(password, employee.password);
     
@@ -234,105 +234,5 @@ export const approveUser = async (req, res) => {
        
       message: "Error rejecting user", 
       error: err.message });
-  }
-};
-
-// ==================== Forget Password ====================
-export const forgetPassword = async (req, res) => {
-  try {
-    const { email } = req.body;
-
-    // ✅ 1. Find user by email
-    const user = await Emp.findOne({ email });
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // ✅ 2. Generate JWT reset token (valid for 10 minutes)
-    const token = jwt.sign(
-      { userId: user._id },
-      process.env.JWT_SECRET,
-      { expiresIn: "10m" }
-    );
-
-    // ✅ 3. Try sending the email
-    try {
-      await sendEmail({
-        to: user.email,
-        subject: "Password Reset Request",
-        html: `
-          <div style="font-family: Arial, sans-serif; background-color: #f6f9fc; padding: 40px;">
-            <div style="max-width: 600px; margin: auto; background: white; border-radius: 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); padding: 30px;">
-              <h2 style="color: #333; text-align: center;">🔒 Password Reset Request</h2>
-              <p style="font-size: 15px; color: #555;">
-                Hi ${user.firstName || "there"},<br><br>
-                We received a request to reset your password for your EMS account.
-                Click the button below to choose a new password:
-              </p>
-
-              <div style="text-align: center; margin: 30px 0;">
-                <a href="http://localhost:3000/reset-password/${token}" 
-                   style="background-color: #007bff; color: white; text-decoration: none; padding: 12px 24px; border-radius: 6px; display: inline-block;">
-                   Reset Password
-                </a>
-              </div>
-
-              <p style="font-size: 14px; color: #555;">
-                This link will expire in <b>10 minutes</b> for your security.
-              </p>
-              <p style="font-size: 13px; color: #777;">
-                If you didn’t request a password reset, you can safely ignore this email.
-              </p>
-
-              <hr style="margin: 25px 0; border: none; border-top: 1px solid #eee;">
-              <p style="font-size: 12px; color: #888; text-align: center;">
-                © ${new Date().getFullYear()} DevRolin EMS System. All rights reserved.
-              </p>
-            </div>
-          </div>
-        `,
-      });
-
-      // ✅ 4. Send success response
-      res.status(200).json({ message: "Reset email sent successfully" });
-    } catch (emailError) {
-      console.error("Email sending failed:", emailError);
-      res.status(500).json({ message: "Failed to send reset email" });
-    }
-
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
-};
-
-// ==================== Reset Password ====================
-export const resetPassword = async (req, res) => {
-  try {
-    const { token } = req.params;
-    const { newPassword } = req.body;
-
-    // ✅ Verify JWT token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    if (!decoded) {
-      return res.status(401).json({ message: "Invalid or expired token" });
-    }
-
-    // ✅ Find user by decoded id
-    const user = await Emp.findById(decoded.userId);
-    if (!user) {
-      return res.status(404).json({ message: "User not found" });
-    }
-
-    // ✅ Hash new password
-    const salt = await bcrypt.genSalt(10);
-    const hashedPassword = await bcrypt.hash(newPassword, salt);
-
-    // ✅ Update user password
-    user.password = hashedPassword;
-    await user.save();
-
-    return res.status(200).json({ message: "Password reset successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
   }
 };

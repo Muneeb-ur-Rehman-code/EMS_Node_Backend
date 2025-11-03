@@ -1,4 +1,5 @@
-import mongoose from "mongoose";
+const mongoose = require("mongoose");
+
 const attendanceSchema = new mongoose.Schema({
   employeeId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -57,4 +58,4 @@ if (this.checkIn) {
   next();
 });
 
-export default mongoose.model("Attendance", attendanceSchema);
+ module.exports = mongoose.model("Attendance", attendanceSchema);
